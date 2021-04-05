@@ -9,6 +9,7 @@ class Reader extends React.Component<{}, { message: Array<string> }> {
 
   handleFileUpload = (e: any) => {
     if (window.FileReader) {
+
       const file = e.target.files[0];
       const reader = new FileReader();
       if (file && file.type === "application/vnd.ms-excel") {
@@ -52,6 +53,7 @@ class Reader extends React.Component<{}, { message: Array<string> }> {
           type="file"
           name="csv-input"
           aria-label="csv-input"
+          data-testid="csv-input"
           onChange={(e) => this.handleFileUpload(e)}
           accept=".csv"
         />
