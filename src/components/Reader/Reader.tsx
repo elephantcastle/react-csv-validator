@@ -6,11 +6,12 @@ class Reader extends React.Component<{}, { message: Array<string> }> {
     super(props);
     this.state = { message: [] };
   }
+
   handleFileUpload = (e: any) => {
     if (window.FileReader) {
       const file = e.target.files[0];
       const reader = new FileReader();
-      if (file) {
+      if (file && file.type === "application/vnd.ms-excel") {
         reader.onload = (e) => {
           axios
             .post("http://localhost:5000/validate-csv", {
@@ -20,15 +21,31 @@ class Reader extends React.Component<{}, { message: Array<string> }> {
               this.setState({ message: response.data });
             })
             .catch((e) => {
-             console.log(e)
+              this.setState({ message: e.response.data });
             });
         };
 
+        reader.onerror = (event) => {
+          if (
+            event &&
+            event.target &&
+            event.target.error &&
+            event.target.error.name === "NotReadableError"
+          ) {
+            this.setState({ message: ["Cannot read file!\nPlease make sure the file is a valid .csv"] });
+          }
+        };
         reader.readAsText(file);
+      } else if(file){
+        this.setState({ message: ["Please make sure the file is a valid .csv"] });
+      }else{
+        this.setState({ message: [] });
       }
     }
   };
+
   render() {
+    const listItems = this.state.message.map((mex: string) => <li key={mex}>{mex}</li>);
     return (
       <div aria-label="csv-component">
         <input
@@ -38,6 +55,9 @@ class Reader extends React.Component<{}, { message: Array<string> }> {
           onChange={(e) => this.handleFileUpload(e)}
           accept=".csv"
         />
+        <ul aria-label="message">
+            {listItems}
+        </ul>
       </div>
     );
   }
